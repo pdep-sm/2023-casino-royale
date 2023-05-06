@@ -63,7 +63,65 @@ manoNegra (Jugador _ cartas _) = ((/=5).length) cartas || any esoNoSeVale cartas
 ocurrenciasDe x = length . filter (== x)
 --3.a
 numero = fst
+palo = snd
 par = aparece 2
-aparece n cartas =  any ((n==).flip ocurrenciasDe (map numero cartas)) [1..13] 
+
+aparece n cartas =  any ((n==).flip ocurrenciasDe numeros) [1..13]
+    where numeros = map numero cartas
+
+aparece' n cartas =  any (\num -> n == ocurrenciasDe num numeros) [1..13]
+    where numeros = map numero cartas
 --flip f a b = f b a
 --3.b
+pierna = aparece 3
+--3.c
+color :: [Carta] -> Bool
+color (carta:cartas) = all ((==palo carta).palo) cartas
+--3.d
+fullHouse cartas = par cartas && pierna cartas
+fullHouse' = flip all [par, pierna].flip ($)
+--3.e
+poker = aparece 4
+--3.f
+otro _ = True
+
+--4
+alguienSeCarteo mesa = sinRepetidos todasLasCartas /= todasLasCartas
+    where todasLasCartas = concat . map mano $ mesa
+
+--5.a
+valores = [(par,1), (pierna,2), (color,3), (fullHouse,4), (poker,5), (otro, 0)]
+
+valor mano = snd . maximoSegun snd . filter (($mano).fst) $ valores
+
+--5.b
+bebidaWinner = bebida . maximoSegun (valor.mano) . filter (not.manoNegra)
+
+--6
+--a
+--El nombre del jugador que está tomando la bebida de nombre más largo.
+-- > nombre.maximoSegun (length.bebida) $ mesaQueMasAplauda
+
+
+--7.a
+ordenar _ [] = []
+ordenar criterio (x:xs) =
+    anteriores ++ [x] ++ posteriores
+    where aplica param = ordenar criterio (filter (param.criterio x) xs)
+          anteriores = aplica not
+          posteriores = aplica id
+
+--7.b
+escalera mano = numerosOrdenados == [head numerosOrdenados.. head numerosOrdenados + 4] 
+        where numerosOrdenados = ordenar (<) . map numero $ mano
+
+
+escaleraDeColor mano = escalera mano && color mano
+
+
+
+
+
+
+
+
